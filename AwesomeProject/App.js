@@ -1,114 +1,147 @@
-/**
- * Sample React Native App
- * https://github.com/facebook/react-native
- *
- * @format
- * @flow strict-local
- */
+import React , {useState} from 'react';
+import {Button,  StyleSheet,  View,  Text,  TextInput, Dimensions, ScrollView} from 'react-native';
+import {LineChart}  from 'react-native-chart-kit';
+import  uuid from 'uuid';
+/*
+ tasks = [ {name : 'sandesh', data : [{desciption:'paani lana' , money : '100'}]} , ]
+*/
+import Todo from './Todo'
+const App = ()  => {
+  const [name, setName] = useState('');
+  const [description , setDescription] = useState('')
+  const [income, setIncome] = useState('');
+  const [tasks, setTasks] = useState([
+    {
+      name : 's',
+      totalIncome : 200,
+      timestamp : new Date(),
+      data : [
+        {
+          description : "bike repair",
+          income : 200,
+        }
+      ]
+    }
+  ]);
 
-import React from 'react';
-import {
-  SafeAreaView,
-  StyleSheet,
-  ScrollView,
-  View,
-  Text,
-  StatusBar,
-} from 'react-native';
+  const handleClick = () => {
+    const task = { name:name, totalIncome:income, data : [ {description : description, income: income}]};
+    const present = tasks.filter( (task) => task.name===name);
+    if(present.length!==0){
+      present[0].totalIncome = parseInt(present[0].totalIncome) + parseInt(income);
+      present[0].data = [...present[0].data, {description : description, income: income}];
+      setTasks([...(tasks.filter((task)=> task.name!==name)) , present[0]]);
+    }
+    else{
+      setTasks([task, ...tasks]);
+    }
+    setName('');
+    setDescription('');
+    setIncome('');
+  }
 
-import {
-  Header,
-  LearnMoreLinks,
-  Colors,
-  DebugInstructions,
-  ReloadInstructions,
-} from 'react-native/Libraries/NewAppScreen';
-
-const App: () => React$Node = () => {
   return (
     <>
-      <StatusBar barStyle="dark-content" />
-      <SafeAreaView>
-        <ScrollView
-          contentInsetAdjustmentBehavior="automatic"
-          style={styles.scrollView}>
-          <Header />
-          {global.HermesInternal == null ? null : (
-            <View style={styles.engine}>
-              <Text style={styles.footer}>Engine: Hermes</Text>
+      <View style={styles.container}>
+        <Text style={styles.titleText}>Keep track of income</Text>
+        <Text>Name</Text>
+        <TextInput placeholder='enter your name' value={name} onChangeText={text => setName(text)}  style={styles.textInput}/>
+        <Text>Description</Text>
+        <TextInput placeholder='enter job description' value={description} onChangeText={text => setDescription(text)}  style={styles.textInput}/>
+        <Text>Income</Text>
+        <TextInput placeholder='enter your income in ₹' value={income} onChangeText={text => setIncome(text)}  style={styles.textInput} keyboardType='numeric'/>
+        <Button disabled={!name && !description && !income} title ='Add Income' onPress={handleClick} style={styles.button}/>
+        { tasks.map(task => (
+            <View key={uuid()}>
+              <Text>Name: {task.name} , Total Income: ₹{task.totalIncome}</Text>
+              {task.data.map(doc => (
+                <View key={uuid()} style={styles.inline}>
+                  <Text>Description: {doc.description} and </Text>
+                  <Text>Income: ₹{doc.income}</Text>
+                </View>
+              ))}
             </View>
-          )}
-          <View style={styles.body}>
-            <View style={styles.sectionContainer}>
-              <Text style={styles.sectionTitle}>Step One</Text>
-              <Text style={styles.sectionDescription}>
-                Edit <Text style={styles.highlight}>App.js</Text> to change this
-                screen and then come back to see your edits.
-              </Text>
-            </View>
-            <View style={styles.sectionContainer}>
-              <Text style={styles.sectionTitle}>See Your Changes</Text>
-              <Text style={styles.sectionDescription}>
-                <ReloadInstructions />
-              </Text>
-            </View>
-            <View style={styles.sectionContainer}>
-              <Text style={styles.sectionTitle}>Debug</Text>
-              <Text style={styles.sectionDescription}>
-                <DebugInstructions />
-              </Text>
-            </View>
-            <View style={styles.sectionContainer}>
-              <Text style={styles.sectionTitle}>Learn More</Text>
-              <Text style={styles.sectionDescription}>
-                Read the docs to discover what to do next:
-              </Text>
-            </View>
-            <LearnMoreLinks />
-          </View>
-        </ScrollView>
-      </SafeAreaView>
+          )
+        )}
+        <View>
+          <Text>Bezier Line Chart</Text>
+          <LineChart
+            data={{
+              labels: ["January", "February", "March", "April", "May", "June"],
+              datasets: [
+                {
+                  data: [
+                    Math.random() * 100,
+                    Math.random() * 100,
+                    Math.random() * 100,
+                    Math.random() * 100,
+                    Math.random() * 100,
+                    Math.random() * 100
+                  ]
+                }
+              ]
+            }}
+            width={Dimensions.get("window").width} // from react-native
+            height={220}
+            yAxisLabel="$"
+            yAxisSuffix="k"
+            yAxisInterval={1} // optional, defaults to 1
+            chartConfig={{
+              backgroundColor: "#e26a00",
+              backgroundGradientFrom: "#fb8c00",
+              backgroundGradientTo: "#ffa726",
+              decimalPlaces: 2, // optional, defaults to 2dp
+              color: (opacity = 1) => `rgba(255, 255, 255, ${opacity})`,
+              labelColor: (opacity = 1) => `rgba(255, 255, 255, ${opacity})`,
+              style: {
+                borderRadius: 16
+              },
+              propsForDots: {
+                r: "6",
+                strokeWidth: "2",
+                stroke: "#ffa726"
+              }
+            }}
+            bezier
+            style={{
+              marginVertical: 8,
+              borderRadius: 16
+            }}
+          />
+      </View>
+      </View>
     </>
   );
 };
 
 const styles = StyleSheet.create({
-  scrollView: {
-    backgroundColor: Colors.lighter,
+  inline :{
+    flexDirection : 'row',
+
   },
-  engine: {
-    position: 'absolute',
-    right: 0,
+  container : {
+    margin: 5,
+    marginTop : 20,
   },
-  body: {
-    backgroundColor: Colors.white,
+  titleText : {
+    textAlign : 'center',
+    fontSize : 40,
+    color : 'blue',
   },
-  sectionContainer: {
-    marginTop: 32,
-    paddingHorizontal: 24,
+  button : {
+    marginLeft : 10,
   },
-  sectionTitle: {
-    fontSize: 24,
-    fontWeight: '600',
-    color: Colors.black,
+  textInput : {
+    height : 40,
+    borderColor : 'red',
+    borderWidth : 1,
+    minWidth : 200,
+    padding: 5,
+    margin : 10,
   },
-  sectionDescription: {
-    marginTop: 8,
-    fontSize: 18,
-    fontWeight: '400',
-    color: Colors.dark,
-  },
-  highlight: {
-    fontWeight: '700',
-  },
-  footer: {
-    color: Colors.dark,
-    fontSize: 12,
-    fontWeight: '600',
-    padding: 4,
-    paddingRight: 12,
-    textAlign: 'right',
-  },
+  view : {
+    margin : 10,
+  }
 });
 
 export default App;
